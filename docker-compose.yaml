@@ -1,5 +1,30 @@
-version: '3'
+# docker-compose.yml
+#
+# This Docker Compose configuration file is used to deploy and manage multiple containerized services
+# that enable Apache Airflow to run together with a PostgreSQL database. Apache Airflow is a workflow
+# tool used to program, monitor, and manage workflows defined as code. This file defines several services
+# needed for Apache Airflow to function properly in a containerized environment using Docker.
+#
+# The services defined in this file include:
+#  - postgres: PostgreSQL database service that stores the metadata of Apache Airflow.
+#  - airflow-init: Service to initialize the Airflow database with the necessary tables.
+#  - webserver: Service that provides the Apache Airflow web interface to manage workflows (DAGs).
+#  - scheduler: Service that manages the scheduling and execution of tasks defined in the Airflow DAGs.
+#  - worker: Service that executes tasks scheduled by the scheduler using Celery.
+#  - flower: Service that provides a web interface to monitor the Celery workers.
+#
+# Volumes:
+#  - postgres-db-volume: A persistent volume that stores the data of the PostgreSQL database,
+#    ensuring that the data is not lost when the container stops or is removed.
+#
+# Networks:
+#  - airflow: A custom Docker network that allows communication between all the services
+#    defined in this file.
+
+version: '3'  # Version of the docker-compose file format.
+
 services:
+
   postgres:
     image: postgres:13
     environment:
@@ -35,7 +60,7 @@ services:
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__WEBSERVER__RBAC: "True"
-      AIRFLOW__WEBSERVER__SECRET_KEY: "0506" 
+      AIRFLOW__WEBSERVER__SECRET_KEY: "0506"
     ports:
       - "8080:8080"
     command: "airflow webserver"
@@ -56,7 +81,7 @@ services:
     environment:
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__WEBSERVER__SECRET_KEY: "0506" 
+      AIRFLOW__WEBSERVER__SECRET_KEY: "0506"
     command: "airflow scheduler"
     networks:
       - airflow
@@ -101,6 +126,7 @@ services:
 
 volumes:
   postgres-db-volume:
+    driver: local
 
 networks:
   airflow:

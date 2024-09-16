@@ -1,12 +1,12 @@
-# Python bytecode
+#Python bytecode
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
+#C extensions
 *.so
 
-# Distribution / packaging
+#Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -24,27 +24,27 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
+#Virtual environments
 venv/
 env/
 .venv/
 .env/
 
-# IDEs and editors
+#IDEs and editors
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
 
-# Operating system files
+#Operating system files
 .DS_Store
 Thumbs.db
 
-# Jupyter Notebook
+#Jupyter Notebook
 .ipynb_checkpoints
 
-# Data files
+#Data files
 *.csv
 *.json
 *.xlsx
@@ -52,32 +52,32 @@ Thumbs.db
 *.db
 *.sqlite3
 
-# Log files
+#Log files
 *.log
 
-# Output files
+#Output files
 *.pkl
 *.joblib
 *.h5
 *.model
 
-# Configuration files
+#Configuration files
 *.ini
 *.cfg
 config.py
 
-# Temporary files
+#Temporary files
 *.bak
 *.tmp
 
-# Documentation
+#Documentation
 docs/_build/
 
-# Test coverage
+#Test coverage
 .coverage
 htmlcov/
 
-# Miscellaneous
+#Miscellaneous
 .cache
 .pytest_cache/
 
