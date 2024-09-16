@@ -1,0 +1,107 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    networks:
+      - airflow
+
+  airflow-init:
+    image: apache/airflow:2.5.1
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    entrypoint: /bin/bash -c "airflow db init"
+    networks:
+      - airflow
+
+  webserver:
+    image: apache/airflow:2.5.1
+    depends_on:
+      - airflow-init
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__WEBSERVER__RBAC: "True"
+      AIRFLOW__WEBSERVER__SECRET_KEY: "0506" 
+    ports:
+      - "8080:8080"
+    command: "airflow webserver"
+    networks:
+      - airflow
+    volumes:
+      - /home/lourdes22/data-pipeline/dags:/opt/airflow/dags
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  scheduler:
+    image: apache/airflow:2.5.1
+    depends_on:
+      - airflow-init
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__WEBSERVER__SECRET_KEY: "0506" 
+    command: "airflow scheduler"
+    networks:
+      - airflow
+    volumes:
+      - /home/lourdes22/data-pipeline/dags:/opt/airflow/dags
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  worker:
+    image: apache/airflow:2.5.1
+    depends_on:
+      - airflow-init
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__WEBSERVER__SECRET_KEY: "0506"
+    command: "airflow celery worker"
+    networks:
+      - airflow
+    volumes:
+      - /home/lourdes22/data-pipeline/dags:/opt/airflow/dags
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type LocalTaskJob"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  flower:
+    image: apache/airflow:2.5.1
+    depends_on:
+      - airflow-init
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    command: "airflow celery flower"
+    ports:
+      - "5555:5555"
+    networks:
+      - airflow
+
+volumes:
+  postgres-db-volume:
+
+networks:
+  airflow:
+    driver: bridge
