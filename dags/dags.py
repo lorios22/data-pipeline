@@ -1,69 +1,94 @@
 """
-This script defines a DAG (Directed Acyclic Graph) in Apache Airflow used to execute preprocessing tasks on a JSON file.
-The DAG is scheduled to run daily and performs two main functions: preprocessing a JSON file and saving the results
-to a CSV file. The script uses Python operators (PythonOperator) to define tasks in Airflow and manage the execution
-of the workflow.
+This script defines a DAG (Directed Acyclic Graph) in Apache Airflow used to perform web scraping, preprocess the resulting JSON files,
+and insert the data into a database. The DAG is scheduled to run daily and follows a simple sequence of tasks:
+web scraping, JSON file preprocessing, and database insertion.
 
 Main Components:
-- DAG: Defines the workflow structure and scheduling.
-- PythonOperator: Operator that executes Python functions to perform preprocessing and saving tasks.
-- preprocessing_json: Function imported from the `preprocessing` module responsible for preprocessing a JSON file.
-- save_json_to_csv: Function imported from the `preprocessing` module that saves the preprocessed result in CSV format.
-- default_args: Default arguments applied to all tasks within the DAG.
+- **DAG**: Defines the workflow structure and schedule.
+- **PythonOperator**: Executes Python functions as tasks in the DAG.
+- **WebScraper**: A class imported from the `webscraper` module, responsible for scraping data from a specified URL.
+- **preprocessing_json_from_directory**: Function from the `preprocessing` module, used to preprocess JSON files in a directory.
+- **insert_into_db**: Function from the `database` module, used to insert processed data into a database.
+- **default_args**: Default parameters applied to all tasks in the DAG, such as retry behavior and email notifications.
 
 DAG Configuration:
-- owner: Owner of the DAG (Airflow).
-- depends_on_past: Indicates that DAG runs do not depend on previous runs.
-- email_on_failure/email_on_retry: Disables email notifications on failure or retry.
-- retries: Number of retries in case of failure.
-- retry_delay: Waiting time between retries.
+- **owner**: Specifies the owner of the DAG ('airflow').
+- **depends_on_past**: Set to `False`, meaning each run of the DAG does not depend on previous runs.
+- **email_on_failure**/**email_on_retry**: Disable email notifications for task failure or retry.
+- **retries**: Number of times a task will retry in case of failure.
+- **retry_delay**: Specifies the wait time between retries (5 minutes).
 
 Defined Tasks:
-- preprocessing_and_save: Python function that reads a JSON file, preprocesses it, and saves the result to a CSV file.
-"""
+1. **run_webscraper**: Executes the `WebScraper` class to scrape data from a specified URL.
+2. **run_preprocessing**: Calls the `preprocessing_json_from_directory` function to preprocess scraped JSON files.
+3. **insert_into_db**: Inserts preprocessed data (in CSV format) into a database.
 
+Task Dependencies:
+- The DAG begins with the web scraping task (`run_webscraper`), followed by preprocessing the scraped JSON files (`run_preprocessing`).
+"""
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import sys
 import os
 
-# Ensure the script directory is in Python's path
+# Ensure the script directory is included in Python's path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from preprocessing import preprocessing_json, save_json_to_csv
+from preprocessing import preprocessing_json_from_directory
+from webscraper import WebScraper
+from database import insert_into_db
 
 # Define the default arguments for the DAG
 default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    'owner': 'airflow',  # Owner of the DAG
+    'depends_on_past': False,  # Does not depend on previous DAG runs
+    'email_on_failure': False,  # Disable email notifications on failure
+    'email_on_retry': False,  # Disable email notifications on retry
+    'retries': 1,  # Number of retries in case of failure
+    'retry_delay': timedelta(minutes=5),  # Time to wait between retries
 }
 
 # Create the DAG
 with DAG(
-    'preprocessing_json',
+    'preprocessing_and_webscraping_dag',
     default_args=default_args,
-    description='DAG to execute preprocessing of a JSON file',
+    description='DAG to run web scraping and process a JSON file',  # Description of the DAG
     schedule_interval=timedelta(days=1),  # Schedule interval (daily)
-    start_date=datetime(2024, 9, 11),  # DAG start date
-    catchup=False,  # Avoid running past unexecuted jobs
+    start_date=datetime(2024, 9, 11),  # Start date for the DAG
+    catchup=False,  # Do not run past DAG instances
 ) as dag:
 
-    # Define the Python task that will execute the preprocessing function
-    def preprocessing_and_save():
-        json_str = preprocessing_json('/opt/airflow/dags/Scrape_Result_2024-09-11-14-25-20.json')
-        if json_str:
-            save_json_to_csv(json_str, '/opt/airflow/dags/titulos.csv')
+    # Function to run the web scraper
+    def run_webscraper():
+        url = "https://vitalik.eth.limo/"
+        scraper = WebScraper(url, verbose=True, save_to_file=True, save_format='json')  # Enable verbose mode for debugging
+        scraper.scrape()  # Run the web scraper
 
-    # Create the Airflow task using PythonOperator
-    run_preprocessing = PythonOperator(
-        task_id='run_preprocessing',  # Task identifier in the DAG
-        python_callable=preprocessing_and_save,  # Python function to execute
+    # Task to execute the web scraper
+    scrape_task = PythonOperator(
+        task_id='run_webscraper',  # Task ID for the web scraper
+        python_callable=run_webscraper,  # Python function to be executed
     )
 
-    # Define the workflow
-    run_preprocessing
+    # Function to preprocess the scraped JSON files and save as CSV
+    def preprocessing_and_save():
+        webscraping_dir = '/opt/airflow/dags/files/webscraper'  # Directory where web scraping output is stored
+        preprocessed_dir = '/opt/airflow/dags/files/preprocessed'  # Directory to save preprocessed output
+        preprocessing_json_from_directory(webscraping_dir)  # Run the preprocessing function
+
+    # Task to run preprocessing
+    run_preprocessing = PythonOperator(
+        task_id='run_preprocessing',  # Task ID for preprocessing
+        python_callable=preprocessing_and_save,  # Python function to be executed
+    )
+
+    # Task to insert preprocessed data into the database
+    insert_task = PythonOperator(
+        task_id='insert_into_db',  # Task ID for database insertion
+        python_callable=insert_into_db,  # Python function to be executed
+        op_args=['/opt/airflow/dags/files/preprocessed/titulos.csv']  # Path to the CSV file to be inserted into the database
+    )
+
+    # Task dependencies: run web scraper first, then preprocessing
+    scrape_task >> run_preprocessing  # >> insert_task (uncomment if insert step is added)

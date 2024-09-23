@@ -1,133 +1,60 @@
-# docker-compose.yml
-#
-# This Docker Compose configuration file is used to deploy and manage multiple containerized services
-# that enable Apache Airflow to run together with a PostgreSQL database. Apache Airflow is a workflow
-# tool used to program, monitor, and manage workflows defined as code. This file defines several services
-# needed for Apache Airflow to function properly in a containerized environment using Docker.
-#
-# The services defined in this file include:
-#  - postgres: PostgreSQL database service that stores the metadata of Apache Airflow.
-#  - airflow-init: Service to initialize the Airflow database with the necessary tables.
-#  - webserver: Service that provides the Apache Airflow web interface to manage workflows (DAGs).
-#  - scheduler: Service that manages the scheduling and execution of tasks defined in the Airflow DAGs.
-#  - worker: Service that executes tasks scheduled by the scheduler using Celery.
-#  - flower: Service that provides a web interface to monitor the Celery workers.
-#
-# Volumes:
-#  - postgres-db-volume: A persistent volume that stores the data of the PostgreSQL database,
-#    ensuring that the data is not lost when the container stops or is removed.
-#
-# Networks:
-#  - airflow: A custom Docker network that allows communication between all the services
-#    defined in this file.
-
-version: '3'  # Version of the docker-compose file format.
-
 services:
 
   postgres:
-    image: postgres:13
+    image: postgres:16
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_DB: airflow  # Database name
     volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
+      - postgres-db-volume:/var/lib/postgresql/data  # Persistent volume for PostgreSQL data
+    ports:
+      - "5432:5432"  # Expose port 5432 for connections from outside Docker (like DBeaver)
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      test: ["CMD-SHELL", "pg_isready -U airflow"]  # Check if PostgreSQL is ready
       interval: 10s
       retries: 5
       timeout: 5s
     networks:
-      - airflow
+      - airflow  # Attach to the airflow network
 
   airflow-init:
-    image: apache/airflow:2.5.1
+    build:
+      context: ./  # Use the current directory as the build context
+      dockerfile: Dockerfile  # Use the Dockerfile to build this service
     depends_on:
-      - postgres
+      - postgres  # Ensure Postgres is up before running this service
     environment:
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-    entrypoint: /bin/bash -c "airflow db init"
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow  # Set the database connection string
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor  # Use LocalExecutor for task execution
+    entrypoint: /bin/bash -c "airflow db init"  # Initialize the Airflow database
     networks:
-      - airflow
+      - airflow  # Attach to the airflow network
 
   webserver:
-    image: apache/airflow:2.5.1
+    build:
+      context: ./  # Use the current directory as the build context
+      dockerfile: Dockerfile  # Use the Dockerfile to build this service
     depends_on:
-      - airflow-init
+      - airflow-init  # Wait for the Airflow database to be initialized
     environment:
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__WEBSERVER__RBAC: "True"
-      AIRFLOW__WEBSERVER__SECRET_KEY: "0506"
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow  # Database connection string
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor  # Use LocalExecutor for task execution
+      AIRFLOW__WEBSERVER__RBAC: "True"  # Enable RBAC (role-based access control)
+      AIRFLOW__WEBSERVER__SECRET_KEY: "0506"  # Webserver secret key
     ports:
-      - "8080:8080"
-    command: "airflow webserver"
+      - "8080:8080"  # Expose port 8080 for the web interface
+    command: "airflow webserver"  # Command to start the webserver
     networks:
-      - airflow
+      - airflow  # Attach to the airflow network
     volumes:
-      - /home/lourdes22/data-pipeline/dags:/opt/airflow/dags
+      - /home/lourdes22/data-pipeline/dags:/opt/airflow/dags  # Mount the DAGs directory
     healthcheck:
-      test: ["CMD-SHELL", "curl --fail http://localhost:8080/health"]
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/health"]  # Check if the webserver is running
       interval: 10s
       retries: 5
       timeout: 5s
 
   scheduler:
-    image: apache/airflow:2.5.1
-    depends_on:
-      - airflow-init
-    environment:
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__WEBSERVER__SECRET_KEY: "0506"
-    command: "airflow scheduler"
-    networks:
-      - airflow
-    volumes:
-      - /home/lourdes22/data-pipeline/dags:/opt/airflow/dags
-    healthcheck:
-      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
-
-  worker:
-    image: apache/airflow:2.5.1
-    depends_on:
-      - airflow-init
-    environment:
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__WEBSERVER__SECRET_KEY: "0506"
-    command: "airflow celery worker"
-    networks:
-      - airflow
-    volumes:
-      - /home/lourdes22/data-pipeline/dags:/opt/airflow/dags
-    healthcheck:
-      test: ["CMD-SHELL", "airflow jobs check --job-type LocalTaskJob"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
-
-  flower:
-    image: apache/airflow:2.5.1
-    depends_on:
-      - airflow-init
-    environment:
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    command: "airflow celery flower"
-    ports:
-      - "5555:5555"
-    networks:
-      - airflow
-
-volumes:
-  postgres-db-volume:
-    driver: local
-
-networks:
-  airflow:
-    driver: bridge
+    build:
+      context: ./ 

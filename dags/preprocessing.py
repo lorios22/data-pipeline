@@ -1,106 +1,117 @@
 """
-This script provides two main functions for preprocessing a JSON file and saving the processed data to a CSV file.
-The preprocessing involves cleaning and extracting relevant information from the JSON content, specifically titles,
-and converting them into a JSON-serializable format. The processed JSON is then saved as a CSV file using Pandas.
+This script contains functions for preprocessing JSON files from a directory, transforming them into CSV format, 
+and handling potential issues with the JSON structure. The main function, `preprocessing_json_from_directory`, 
+processes the most recent JSON file in a specified directory and converts it into a structured CSV file. 
+The function also includes error handling for common JSON issues.
 
-Key Components:
-- Libraries: Uses `pandas` for DataFrame operations, `re` for regular expression handling, and `json` for JSON operations.
-- preprocessing_json: Function that reads a JSON file, cleans the content, extracts titles, and converts the extracted
-  information into a JSON-serializable string. It handles both valid JSON structures and fallback extraction using regular expressions.
-- save_json_to_csv: Function that takes a JSON-serializable string representing a DataFrame and saves it to a CSV file.
+Main Components:
+- `get_latest_json_file`: Retrieves the most recent JSON file from a directory.
+- `preprocessing_json_from_directory`: Main function that preprocesses the latest JSON file, corrects some common formatting issues,
+   extracts relevant data (like URLs and titles), and saves the results to a CSV file.
+- Error Handling: The function handles JSON decoding errors and provides debugging information when issues arise.
 
-Functions:
-1. preprocessing_json(file_path):
-   - Reads the content of a JSON file.
-   - Checks if the file is empty or contains only whitespace.
-   - Cleans the content by removing non-printable characters and replacing single quotes with double quotes for JSON validity.
-   - Extracts JSON content from the cleaned text and converts it to a DataFrame.
-   - If JSON extraction fails, attempts a fallback extraction using regular expressions.
-   - Returns the JSON-serializable string representation of the DataFrame or None if no valid JSON is found.
+Key Steps in `preprocessing_json_from_directory`:
+1. Reads the latest JSON file from a given directory.
+2. Skips the first 267 lines and preprocesses the content (correcting quotes, null values, and other formatting issues).
+3. Extracts the 'links' section from the JSON and structures it into rows with 'title', 'date', and 'url'.
+4. Saves the processed data into a CSV file.
+5. Deletes the original JSON file after successful processing.
+6. Handles and logs any errors that occur during processing, including JSON decoding issues.
 
-2. save_json_to_csv(json_str, file_name):
-   - Takes a JSON-serializable string representing a DataFrame.
-   - Converts the JSON string to a DataFrame and saves it as a CSV file.
-   - Prints a message indicating success or failure.
-
-Usage:
-- Ensure that the `json` library is imported for JSON operations.
-- Adjust the `file_path` to point to the location of the JSON file you want to preprocess.
+The output CSV file is saved with a timestamped filename, ensuring uniqueness, and it is stored in the specified output directory.
 """
-
+import os 
 import pandas as pd
-import re
-import json  # Ensure to import the json library
+import json
+import datetime
+import csv
 
-file_path = '/opt/airflow/dags/Scrape_Result_2024-09-11-14-25-20.json'
+# Function to get the latest JSON file in a directory
+def get_latest_json_file(directory):
+    json_files = [f for f in os.listdir(directory) if f.endswith('.json')]  # Get all JSON files
+    if not json_files:
+        print("No JSON files found in the directory.")
+        return None
 
-def preprocessing_json(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        content = file.read()
+    # Sort files by modification time, latest first
+    json_files.sort(key=lambda x: os.path.getmtime(os.path.join(directory, x)), reverse=True)
+    latest_file = json_files[0]
+    return os.path.join(directory, latest_file)
 
-    # Check if the file is empty
-    if not content.strip():
-        print("The file is empty or only contains whitespace.")
-        return None  # Return None if the file is empty
-    else:
-        # Clean content by removing any non-printable characters
-        cleaned_content_filtered = ''.join(char for char in content if char.isprintable())
+# Main function to preprocess the latest JSON file from a directory
+def preprocessing_json_from_directory(directory, start_index=268):
+    file_path = get_latest_json_file(directory)  # Get the latest JSON file
+    if not file_path:
+        return
+    try:
+        # Open the JSON file and read its contents
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.readlines()
+            content_from_268 = content[267:]  # Skip the first 267 lines
+            print(content_from_268)
 
-        # Replace single quotes with double quotes to make JSON valid
-        cleaned_content_filtered = re.sub(r"(?<!\\)'", '"', cleaned_content_filtered)
+        # Join the content, remove problematic characters, and prepare for JSON processing
+        content_from_start = ','.join(content_from_268)
+        content_from_start = content_from_start.replace("\'s", '')
+        content_from_start = content_from_start.replace("n't", ' t')
+        content_from_start = content_from_start.replace("\ ", '')
+        content_from_start = content_from_start.replace("'", '"')  # Replace single quotes with double quotes
+        content_from_start = content_from_start.replace("None", "null")  # Replace Python None with JSON null
+        content_from_start = content_from_start.replace('"pro-crypto"', '\\"pro-crypto\\"')
+        content_from_start = content_from_start.replace('Ethereum network"s', 'Ethereum network\'s')  # Correct quotation
+        content_from_start = content_from_start.replace('Vitalik Buterin"s', 'Vitalik Buterin\'s')  # Correct quotation
+        content_from_start = content_from_start.replace('tructured_data', '"structured_data')
 
-        # Attempt to extract JSON only from where it appears to start
-        json_start = cleaned_content_filtered.find('{')
-        if json_start != -1:
-            json_content = cleaned_content_filtered[json_start:]  # Try extracting from where JSON starts
-        
-            try:
-                # Convert content to a JSON object
-                json_data = json.loads(json_content)
-            
-                # Extract titles from 'entries'
-                titles = [entry.get('title', '') for entry in json_data.get('entries', [])]
+        # Fix boolean values for JSON compatibility
+        content_from_start = content_from_start.replace("True", "true").replace("False", "false")
+        print(content_from_start[:1000])  # Print the first 1000 characters for debugging
 
-                # Create a DataFrame with the titles
-                df_titles = pd.DataFrame(titles, columns=['Title'])
+        # Debug problematic sections of the file
+        problematic_section = content_from_start[25790:25820]
+        print("Problematic section:", problematic_section)
 
-                # Convert the DataFrame to a JSON serializable string
-                json_serializable_df = df_titles.to_json(orient='split')
+        print("\nShowing more context around the error:")
+        print(content_from_start[25750:25850])  # Show a larger range around the problematic section
 
-                # Display the DataFrame as a JSON serializable string
-                print(json_serializable_df)
-                return json_serializable_df
-
-            except json.JSONDecodeError as e:
-                print(f"Error decoding JSON after cleaning: {e}")
-
-                # Attempt extraction with regular expressions as a fallback
-                title_pattern = re.compile(r'"title":\s*"([^"]+)"')  # Pattern to find titles in the text
-                titles = title_pattern.findall(cleaned_content_filtered)  # Extract all matching titles
-            
-                # Create a DataFrame with the titles
-                df_titles = pd.DataFrame(titles, columns=['Title'])
-
-                # Convert the DataFrame to a JSON serializable string
-                json_serializable_df = df_titles.to_json(orient='split')
-
-                # Display the DataFrame as a JSON serializable string
-                print(json_serializable_df)
-                return json_serializable_df
+        # Load the content as JSON data
+        json_data = json.loads(content_from_start)
+        if 'links' in json_data:
+            links = json_data['links']  # Extract links from the JSON
+            data = [{'url': link['url'], 'title': link['text']} for link in links]  # Collect title and URL
+            for item in data:
+                print(f"Title: {item['title']}, URL: {item['url']}")  # Print the title and URL for debugging
         else:
-            print("No valid JSON found in the file content.")
-            return None  # Return None if no valid JSON is found
+            print("No links found in the JSON file.")
+        
+        # Prepare rows for CSV output
+        rows = []
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-def save_json_to_csv(json_str, file_name):
-    """
-    Saves a JSON-serializable string to a CSV file.
-    
-    :param json_str: JSON string representing a DataFrame
-    :param file_name: Name of the CSV file
-    """
-    if json_str:
-        df = pd.read_json(json_str, orient='split')
-        df.to_csv(file_name, index=False, encoding='utf-8')
-        print(f"DataFrame saved as {file_name}")
-    else:
-        print("The JSON string is empty or invalid. No file was saved.")
+        # Extract title, date, and link from the JSON data
+        for item in data:
+            title = item.get('title', 'N/A')
+            date = item.get('date', timestamp)
+            link = item.get('url', 'N/A')
+            rows.append([title, date, link])
+
+        # Define the CSV file path
+        csv_file_path = f'/opt/airflow/dags/files/preprocessed/output_{timestamp}.csv'
+
+        # Write the data to the CSV file
+        with open(csv_file_path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(['Title', 'Date', 'URL'])  # Write CSV header
+            writer.writerows(rows)
+        
+        print(f"CSV file saved at {csv_file_path}")
+        
+        # Remove the processed JSON file
+        os.remove(file_path)
+        print(f"JSON file {file_path} deleted after processing.")
+
+    except json.JSONDecodeError as json_error:
+        print(f"Error decoding JSON: {json_error}")
+        return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
