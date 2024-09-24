@@ -29,6 +29,7 @@ venv/
 env/
 .venv/
 .env/
+.env
 
 #IDEs and editors
 .idea/

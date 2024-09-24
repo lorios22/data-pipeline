@@ -1,26 +1,4 @@
-"""
-This script contains functions for preprocessing JSON files from a directory, transforming them into CSV format, 
-and handling potential issues with the JSON structure. The main function, `preprocessing_json_from_directory`, 
-processes the most recent JSON file in a specified directory and converts it into a structured CSV file. 
-The function also includes error handling for common JSON issues.
-
-Main Components:
-- `get_latest_json_file`: Retrieves the most recent JSON file from a directory.
-- `preprocessing_json_from_directory`: Main function that preprocesses the latest JSON file, corrects some common formatting issues,
-   extracts relevant data (like URLs and titles), and saves the results to a CSV file.
-- Error Handling: The function handles JSON decoding errors and provides debugging information when issues arise.
-
-Key Steps in `preprocessing_json_from_directory`:
-1. Reads the latest JSON file from a given directory.
-2. Skips the first 267 lines and preprocesses the content (correcting quotes, null values, and other formatting issues).
-3. Extracts the 'links' section from the JSON and structures it into rows with 'title', 'date', and 'url'.
-4. Saves the processed data into a CSV file.
-5. Deletes the original JSON file after successful processing.
-6. Handles and logs any errors that occur during processing, including JSON decoding issues.
-
-The output CSV file is saved with a timestamped filename, ensuring uniqueness, and it is stored in the specified output directory.
-"""
-import os 
+import os  
 import pandas as pd
 import json
 import datetime
@@ -28,6 +6,15 @@ import csv
 
 # Function to get the latest JSON file in a directory
 def get_latest_json_file(directory):
+    """
+    Retrieve the most recent JSON file from the specified directory.
+
+    Args:
+        directory (str): The path to the directory containing JSON files.
+
+    Returns:
+        str: The full path of the latest JSON file, or None if no JSON files are found.
+    """
     json_files = [f for f in os.listdir(directory) if f.endswith('.json')]  # Get all JSON files
     if not json_files:
         print("No JSON files found in the directory.")
@@ -38,11 +25,40 @@ def get_latest_json_file(directory):
     latest_file = json_files[0]
     return os.path.join(directory, latest_file)
 
+# Function to save DataFrame to .txt
+def save_dataframe_to_txt(df, file_path):
+    """
+    Save a DataFrame to a text file.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to save.
+        file_path (str): The path where the text file will be saved.
+    """
+    with open(file_path, 'w') as f:
+        f.write(df.to_string(index=False))  # Write the DataFrame to the text file without the index
+    print(f"DataFrame saved as .txt at {file_path}")
+
 # Main function to preprocess the latest JSON file from a directory
-def preprocessing_json_from_directory(directory, start_index=268):
+def preprocessing_json_from_directory(directory, airflow_csv_path, start_index=268):
+    """
+    Preprocess the latest JSON file from the specified directory and save the results as a text file.
+
+    This function performs the following steps:
+    1. Retrieves the most recent JSON file.
+    2. Reads and cleans the JSON content.
+    3. Converts the cleaned data into a DataFrame.
+    4. Saves the DataFrame to a text file in the specified directory.
+    5. Deletes the original JSON file after processing.
+
+    Args:
+        directory (str): The directory to search for the latest JSON file.
+        airflow_csv_path (str): The path to the directory where the output text file will be saved.
+        start_index (int, optional): The index to start reading the JSON file. Defaults to 268.
+    """
     file_path = get_latest_json_file(directory)  # Get the latest JSON file
     if not file_path:
         return
+
     try:
         # Open the JSON file and read its contents
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -52,9 +68,9 @@ def preprocessing_json_from_directory(directory, start_index=268):
 
         # Join the content, remove problematic characters, and prepare for JSON processing
         content_from_start = ','.join(content_from_268)
-        content_from_start = content_from_start.replace("\'s", '')
-        content_from_start = content_from_start.replace("n't", ' t')
-        content_from_start = content_from_start.replace("\ ", '')
+        content_from_start = content_from_start.replace("\'s", '')  # Remove problematic apostrophes
+        content_from_start = content_from_start.replace("n't", ' t')  # Replace "n't" with " t"
+        content_from_start = content_from_start.replace("\ ", '')  # Remove backslashes
         content_from_start = content_from_start.replace("'", '"')  # Replace single quotes with double quotes
         content_from_start = content_from_start.replace("None", "null")  # Replace Python None with JSON null
         content_from_start = content_from_start.replace('"pro-crypto"', '\\"pro-crypto\\"')
@@ -66,45 +82,29 @@ def preprocessing_json_from_directory(directory, start_index=268):
         content_from_start = content_from_start.replace("True", "true").replace("False", "false")
         print(content_from_start[:1000])  # Print the first 1000 characters for debugging
 
-        # Debug problematic sections of the file
-        problematic_section = content_from_start[25790:25820]
-        print("Problematic section:", problematic_section)
-
-        print("\nShowing more context around the error:")
-        print(content_from_start[25750:25850])  # Show a larger range around the problematic section
-
         # Load the content as JSON data
         json_data = json.loads(content_from_start)
         if 'links' in json_data:
             links = json_data['links']  # Extract links from the JSON
             data = [{'url': link['url'], 'title': link['text']} for link in links]  # Collect title and URL
-            for item in data:
-                print(f"Title: {item['title']}, URL: {item['url']}")  # Print the title and URL for debugging
         else:
             print("No links found in the JSON file.")
-        
-        # Prepare rows for CSV output
-        rows = []
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            return
 
-        # Extract title, date, and link from the JSON data
-        for item in data:
-            title = item.get('title', 'N/A')
-            date = item.get('date', timestamp)
-            link = item.get('url', 'N/A')
-            rows.append([title, date, link])
+        # Create a DataFrame from the data
+        df = pd.DataFrame(data)
+        df['date'] = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')  # Add current timestamp for 'date'
 
-        # Define the CSV file path
-        csv_file_path = f'/opt/airflow/dags/files/preprocessed/output_{timestamp}.csv'
+        # Drop rows from 2 to 10 (index positions 1 to 9)
+        df.drop(df.index[0:10], inplace=True)
 
-        # Write the data to the CSV file
-        with open(csv_file_path, 'w', newline='') as csv_file:
-            writer = csv.writer(csv_file)
-            writer.writerow(['Title', 'Date', 'URL'])  # Write CSV header
-            writer.writerows(rows)
-        
-        print(f"CSV file saved at {csv_file_path}")
-        
+        # Define the Airflow text file path for the output
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        airflow_txt_file_path = os.path.join(airflow_csv_path, f'preprocessed_vitalik_output_{timestamp}.txt')
+
+        # Save DataFrame to a .txt file in Airflow directory
+        save_dataframe_to_txt(df, airflow_txt_file_path)
+
         # Remove the processed JSON file
         os.remove(file_path)
         print(f"JSON file {file_path} deleted after processing.")

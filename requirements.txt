@@ -2,3 +2,5 @@ beautifulsoup4
 requests
 feedparser
 pandas
+openai
+python-dotenv
