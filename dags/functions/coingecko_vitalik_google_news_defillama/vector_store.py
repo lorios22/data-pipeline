@@ -7,7 +7,7 @@ class VectorStoreManager:
     def __init__(self, api_key: str):
         self.client = OpenAI(api_key=api_key)
         self.logger = logging.getLogger(__name__)
-        self.extensions = ['.pdf', '.txt', '.csv']
+        self.extensions = ['.pdf', '.txt', '.json']
 
     def create_vector_store(self, name: str, 
                             file_ids: Optional[List[str]] = None) -> Dict[str, Any]:

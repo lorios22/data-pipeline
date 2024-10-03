@@ -45,7 +45,7 @@ class WebScraper:
             'Upgrade-Insecure-Requests': '1'
         }
     
-    def scrape(self) -> Tuple[Optional[str], List[str], Optional[str], Optional[List[Dict[str, Any]]]]:
+    def scrape(self, name_webscraper) -> Tuple[Optional[str], List[str], Optional[str], Optional[List[Dict[str, Any]]]]:
         try:
             self.logger(f"Starting scrape for URL: {self.url}")
             
@@ -53,7 +53,7 @@ class WebScraper:
             if self.url.endswith('.rss') or 'rss' in self.url:
                 result = self.scrape_rss()
                 if self.save_to_file:
-                    self.save_response_to_file(result)
+                    self.save_response_to_file(result,name_webscraper)
                 return result
             
             #if the url is not an RSS feed, then it is a normal web page and continue the scraping
@@ -85,7 +85,7 @@ class WebScraper:
                 return None, [], f"Unsupported content type: {content_type}", None
 
             if self.save_to_file:
-                self.save_response_to_file(result)
+                self.save_response_to_file(result, name_webscraper)
 
             return result
 
@@ -98,12 +98,13 @@ class WebScraper:
             self.logger(error_message)
             return None, [], error_message, None
 
-    def save_response_to_file(self, response: Tuple[Optional[str], List[str], Optional[str], Optional[List[Dict[str, Any]]]]):
+    def save_response_to_file(self, response: Tuple[Optional[str], List[str], Optional[str], Optional[List[Dict[str, Any]]]], name_webscraper):
         try:
             timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')                             
-            base_filename = f"Scrape_Result_{timestamp}"
+            base_filename = f"Scrape_result_{name_webscraper}_{timestamp}"
             if self.save_format.lower() == 'json':
-                filename =  f"/opt/airflow/dags/files/webscraper/{base_filename}.json"
+                #home/lourdes22/data-pipeline/files/
+                filename =  f"/opt/airflow/dags/files/webscraper/{base_filename}.txt"
                 with open(filename, 'w', encoding='utf-8') as f:
                     json.dump({
                         "URL": self.url,
@@ -113,7 +114,8 @@ class WebScraper:
                         "Entries": response[3]
                     }, f, ensure_ascii=False, indent=4)
             else:  #Default to txt
-                filename =  f"/opt/airflow/dags/files/webscraper/{base_filename}.json"
+                filename =  f"/opt/airflow/dags/files/webscraper/{base_filename}.txt"
+            local_path = os.path.join('/opt/airflow/files/', f'{base_filename}.txt')
             with open(filename, 'w', encoding='utf-8') as f:    
                 f.write(f"URL: {self.url}\n\n")
                 f.write(f"Content:\n{response[0]}\n\n")
@@ -122,6 +124,14 @@ class WebScraper:
                 f.write(f"Entries:\n{response[3]}\n")
             
             self.logger(f"Response saved to file: {filename}")
+            with open(local_path, 'w', encoding='utf-8') as f:    
+                f.write(f"URL: {self.url}\n\n")
+                f.write(f"Content:\n{response[0]}\n\n")
+                f.write(f"Links:\n{', '.join(response[1])}\n\n")
+                f.write(f"Error:\n{response[2]}\n\n")
+                f.write(f"Entries:\n{response[3]}\n")
+            
+            self.logger(f"Response saved to file: {local_path}")
         except Exception as e:
             error_message = f"Error saving response to file: {e}"
             self.logger(error_message)
@@ -214,7 +224,7 @@ class WebScraper:
         
         #Parse the RSS feed using feedparser
         feed = feedparser.parse(self.url)
-        
+        print(feed)
         #Log successful parsing and number of entries
         self.logger(f"Feed parsed successfully")
         self.logger(f"Number of entries: {len(feed.entries)}")
@@ -240,8 +250,6 @@ class WebScraper:
         #Return the scraped data: content, links, error (None in this case), and entries
         return content, links, None, entries
 
-
-
 def main():
     url_1 = 'https://vitalik.eth.limo/'
     url_2 = "https://news.google.com/rss/search?q=crypto+when:1d&hl=en-US&gl=US&ceid=US:en"
@@ -250,7 +258,7 @@ def main():
     url_5 = 'https://www.bloomberg.com/markets/stocks'
     url_6 = 'https://in.investing.com/news/cryptocurrency-news/3-things-bitcoin-btc-needs-to-hit-60000-4422485'
 
-    scraper = WebScraper(url_2, verbose=True, save_to_file=True, save_format='json')  #Enable verbose mode for debugging
+    scraper = WebScraper(url_2, verbose=True, save_to_file=True, save_format='txt')  #Enable verbose mode for debugging
     scraper.scrape()
 
 if __name__ == "__main__":
