@@ -96,11 +96,11 @@ def save_combined_data_to_file(file_path):
     # Save to a specified text file
     with open(file_path, "w") as txt_file:
         for entry in combined_data:
-            txt_file.write(f"Coin: {entry['coin']}, TVL: {entry['tvl']} ({entry['type'] if 'type' in entry else 'protocol'})\n")
+            txt_file.write(f"Coin: {entry['coin']}, TVL: {entry['tvl']}\n")
     
     with open('/opt/airflow/files/all_coins_defillama.txt', "w") as txt_file:
         for entry in combined_data:
-            txt_file.write(f"Coin: {entry['coin']}, TVL: {entry['tvl']} ({entry['type'] if 'type' in entry else 'protocol'})\n")
+            txt_file.write(f"Coin: {entry['coin']}, TVL: {entry['tvl']}\n")
 
     print(f"Combined chains and protocols saved successfully to '{file_path}'.")
 
