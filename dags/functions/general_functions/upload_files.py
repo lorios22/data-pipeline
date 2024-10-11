@@ -1,4 +1,4 @@
-from functions.coingecko_vitalik_google_news_defillama.vector_store import VectorStoreManager  # Ensure this is correctly imported
+from dags.functions.general_functions.vector_store import VectorStoreManager  # Ensure this is correctly imported
 from dotenv import load_dotenv
 import os
 

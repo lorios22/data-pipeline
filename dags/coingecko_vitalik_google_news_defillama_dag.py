@@ -8,9 +8,9 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # Import custom modules from the project structure
-from dags.functions.coingecko_vitalik_google_news_defillama.get_delete_files import get_all_files, delete_files
+from dags.functions.general_functions.get_delete_files import get_all_files, delete_files
 from dags.functions.coingecko_vitalik_google_news_defillama.webscraper_url import WebScraper
-from dags.functions.coingecko_vitalik_google_news_defillama.upload_files import upload_preprocessed_files_to_vector_store
+from dags.functions.general_functions.upload_files import upload_preprocessed_files_to_vector_store
 from dags.functions.coingecko_vitalik_google_news_defillama.webscraper_coingecko import process_multiple_coins
 from dags.functions.coingecko_vitalik_google_news_defillama.vitalik_news_extraction import execute_news_extraction_pipeline
 from dags.functions.coingecko_vitalik_google_news_defillama.google_news_extraction import process_news_from_directory
