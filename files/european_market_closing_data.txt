@@ -1,48 +1,53 @@
-Closing prices for European market
+European Market Closing Prices
+========================================
+Market: European Stock Indices Report
+========================================
+💰 **Current Price of FTSE 100 (UK)** 💰
+💲 **Price:** **$8269.38**
+📊 **Day Change:** 0.13%
+📅 **Weekly Change:** -1.06%
+🗓️ **Monthly Change:** -0.16%
+Stay up-to-date with market trends! 💼📈
 
-Stock market indices:
-- Nikkei 225 (Japan): 
-Last close in European market: 39,605.80 
+💰 **Current Price of DAX (Germany)** 💰
+💲 **Price:** **$19443.00**
+📊 **Day Change:** 0.34%
+📅 **Weekly Change:** -1.09%
+🗓️ **Monthly Change:** 2.35%
+Stay up-to-date with market trends! 💼📈
 
-- Hang Seng Index (Hong Kong): 
-Last close in European market: 21,251.98 
+========================================
+Cryptocurrency Prices
+========================================
+🪙 **Current Price of Bitcoin (USDT) ** 🪙
+💲 **Price:** **$68,170.01**
+📊 **Day Change:** 2.25%
+📅 **Weekly Change:** -0.38%
+🗓️ **Monthly Change:** 7.95%
+Stay updated on your crypto assets! 📉📈
 
-- Shanghai Composite (China): 
-Last close in European market: 3,217.74 
+🪙 **Current Price of Ethereum (USDT) ** 🪙
+💲 **Price:** **$2,539.67**
+📊 **Day Change:** 0.60%
+📅 **Weekly Change:** -3.88%
+🗓️ **Monthly Change:** -1.56%
+Stay updated on your crypto assets! 📉📈
 
-- FTSE 100 (UK): 
-Last close in European market: 8,263.31 
+========================================
+Commodities prices
+========================================
+💵 **Current Price of Gold** 💵
+💲 **Price:** **$2714.40**
+📊 **Day Change:** -1.09%
+📅 **Weekly Change:** 0.87%
+🗓️ **Monthly Change:** 2.38%
+Keep an eye on the market! 🔍📝
 
-- DAX (Germany): 
-Last close in European market: 19,354.04 
+💵 **Current Price of Oil (Brent Crude)** 💵
+💲 **Price:** **$74.96**
+📊 **Day Change:** -1.42%
+📅 **Weekly Change:** 0.69%
+🗓️ **Monthly Change:** -0.28%
+Keep an eye on the market! 🔍📝
 
-- S&P 500 (USA): 
-Last close in European market: 5,817.33 
-
-- NASDAQ Composite (USA): 
-Last close in European market: 18,357.59 
-
-- US Dollar Index: 
-Last close in European market: 102.87 
-
-
-Cryptocurrencies:
-- Bitcoin (BTC): 
-Last close in European market: 61,852.00 
-
-- Ethereum (ETH): 
-Last close in European market: 2,430.48 
-
-
-Commodities:
-- Gold: 
-Last close in European market: 2,670.20
-
-- Oil (Brent Crude): 
-Last close in European market: 79.21
-
-
-Currency:
-- US Dollar Index: 
-Last close in European market: 102.87 
-
+========================================

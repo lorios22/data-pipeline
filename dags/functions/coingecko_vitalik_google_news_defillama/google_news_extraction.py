@@ -204,4 +204,4 @@ def process_news_from_directory(input_directory, consolidated_file_path, local_d
     print(f"Consolidated file saved at: {consolidated_file_path}")
 
 # Example usage:
-#process_news_from_directory("/home/lourdes22/data-pipeline/files", "/home/lourdes22/data-pipeline/files/consolidated_news_output.txt")
+#process_news_from_directory("/home/lourdes22/data-pipeline/files", "/home/lourdes22/data-pipeline/files/consolidated_news_output.txt", "/home/lourdes22/data-pipeline/files/consolidated_news_output.txt")

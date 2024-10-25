@@ -1,48 +1,60 @@
-Closing prices for Asian market
+Asian Market Closing Prices
+========================================
+Market: Asian Stock Indices Report
+========================================
+💰 **Current Price of Nikkei 225 (Japan)** 💰
+💲 **Price:** **$38143.29**
+📊 **Day Change:** 0.10%
+📅 **Weekly Change:** -2.15%
+🗓️ **Monthly Change:** 0.53%
+Stay up-to-date with market trends! 💼📈
 
-Stock market indices:
-- Nikkei 225 (Japan): 
-Last close in Asian market: 39,605.80 
+💰 **Current Price of Hang Seng Index (Hong Kong)** 💰
+💲 **Price:** **$20489.62**
+📊 **Day Change:** -1.30%
+📅 **Weekly Change:** -1.51%
+🗓️ **Monthly Change:** 7.84%
+Stay up-to-date with market trends! 💼📈
 
-- Hang Seng Index (Hong Kong): 
-Last close in Asian market: 21,251.98 
+💰 **Current Price of Shanghai Composite (China)** 💰
+💲 **Price:** **$3280.26**
+📊 **Day Change:** -0.68%
+📅 **Weekly Change:** 0.57%
+🗓️ **Monthly Change:** 14.57%
+Stay up-to-date with market trends! 💼📈
 
-- Shanghai Composite (China): 
-Last close in Asian market: 3,217.74 
+========================================
+Cryptocurrency Prices
+========================================
+🪙 **Current Price of Bitcoin (USDT) ** 🪙
+💲 **Price:** **$67,546.80**
+📊 **Day Change:** 1.32%
+📅 **Weekly Change:** -1.29%
+🗓️ **Monthly Change:** 6.96%
+Stay updated on your crypto assets! 📉📈
 
-- FTSE 100 (UK): 
-Last close in Asian market: 8,263.66 
+🪙 **Current Price of Ethereum (USDT) ** 🪙
+💲 **Price:** **$2,515.76**
+📊 **Day Change:** -0.35%
+📅 **Weekly Change:** -4.78%
+🗓️ **Monthly Change:** -2.49%
+Stay updated on your crypto assets! 📉📈
 
-- DAX (Germany): 
-Last close in Asian market: 19,347.02 
+========================================
+Commodities prices
+========================================
+💵 **Current Price of Gold** 💵
+💲 **Price:** **$2714.40**
+📊 **Day Change:** -1.09%
+📅 **Weekly Change:** 0.87%
+🗓️ **Monthly Change:** 2.38%
+Keep an eye on the market! 🔍📝
 
-- S&P 500 (USA): 
-Last close in Asian market: 5,815.39 
+💵 **Current Price of Oil (Brent Crude)** 💵
+💲 **Price:** **$74.96**
+📊 **Day Change:** -1.42%
+📅 **Weekly Change:** 0.69%
+🗓️ **Monthly Change:** -0.28%
+Keep an eye on the market! 🔍📝
 
-- NASDAQ Composite (USA): 
-Last close in Asian market: 18,348.45 
-
-- US Dollar Index: 
-Last close in Asian market: 102.88 
-
-
-Cryptocurrencies:
-- Bitcoin (BTC): 
-Last close in Asian market: 61,810.00 
-
-- Ethereum (ETH): 
-Last close in Asian market: 2,430.48 
-
-
-Commodities:
-- Gold: 
-Last close in Asian market: 2,670.80
-
-- Oil (Brent Crude): 
-Last close in Asian market: 79.19
-
-
-Currency:
-- US Dollar Index: 
-Last close in Asian market: 102.88 
-
+========================================

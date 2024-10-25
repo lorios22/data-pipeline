@@ -1,48 +1,60 @@
-Closing prices for American market
+American Market Closing Prices
+========================================
+Market: American Stock Indices Report
+========================================
+💰 **Current Price of S&P 500 (USA)** 💰
+💲 **Price:** **$5788.77**
+📊 **Day Change:** -0.15%
+📅 **Weekly Change:** -1.29%
+🗓️ **Monthly Change:** 0.97%
+Stay up-to-date with market trends! 💼📈
 
-Stock market indices:
-- Nikkei 225 (Japan): 
-Last close in American market: 39,605.80 
+💰 **Current Price of NASDAQ Composite (USA)** 💰
+💲 **Price:** **$18323.75**
+📊 **Day Change:** 0.26%
+📅 **Weekly Change:** -0.90%
+🗓️ **Monthly Change:** 1.38%
+Stay up-to-date with market trends! 💼📈
 
-- Hang Seng Index (Hong Kong): 
-Last close in American market: 21,251.98 
+💰 **Current Price of US Dollar Index** 💰
+💲 **Price:** **$104.20**
+📊 **Day Change:** -0.22%
+📅 **Weekly Change:** 0.18%
+🗓️ **Monthly Change:** 3.82%
+Stay up-to-date with market trends! 💼📈
 
-- Shanghai Composite (China): 
-Last close in American market: 3,217.74 
+========================================
+Cryptocurrency Prices
+========================================
+🪙 **Current Price of Bitcoin (USDT) ** 🪙
+💲 **Price:** **$67,472.82**
+📊 **Day Change:** 1.21%
+📅 **Weekly Change:** -1.40%
+🗓️ **Monthly Change:** 6.84%
+Stay updated on your crypto assets! 📉📈
 
-- FTSE 100 (UK): 
-Last close in American market: 8,263.32 
+🪙 **Current Price of Ethereum (USDT) ** 🪙
+💲 **Price:** **$2,514.06**
+📊 **Day Change:** -0.42%
+📅 **Weekly Change:** -4.85%
+🗓️ **Monthly Change:** -2.55%
+Stay updated on your crypto assets! 📉📈
 
-- DAX (Germany): 
-Last close in American market: 19,351.56 
+========================================
+Commodities prices
+========================================
+💵 **Current Price of Gold** 💵
+💲 **Price:** **$2714.40**
+📊 **Day Change:** -1.09%
+📅 **Weekly Change:** 0.87%
+🗓️ **Monthly Change:** 2.38%
+Keep an eye on the market! 🔍📝
 
-- S&P 500 (USA): 
-Last close in American market: 5,816.29 
+💵 **Current Price of Oil (Brent Crude)** 💵
+💲 **Price:** **$74.96**
+📊 **Day Change:** -1.42%
+📅 **Weekly Change:** 0.69%
+🗓️ **Monthly Change:** -0.28%
+Keep an eye on the market! 🔍📝
 
-- NASDAQ Composite (USA): 
-Last close in American market: 18,354.61 
-
-- US Dollar Index: 
-Last close in American market: 102.87 
-
-
-Cryptocurrencies:
-- Bitcoin (BTC): 
-Last close in American market: 61,852.00 
-
-- Ethereum (ETH): 
-Last close in American market: 2,433.24 
-
-
-Commodities:
-- Gold: 
-Last close in American market: 2,669.50
-
-- Oil (Brent Crude): 
-Last close in American market: 79.02
-
-
-Currency:
-- US Dollar Index: 
-Last close in American market: 102.87 
-
+========================================
