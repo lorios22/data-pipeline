@@ -29,7 +29,7 @@ with DAG(
 
     # Define the file paths where the market data will be saved
     output_path = "/opt/airflow/dags/files/preprocessed/european_market_closing_data.txt"
-    local_path = "/opt/airflow/files/european_market_closing_data.txt"
+    #local_path = "/opt/airflow/files/european_market_closing_data.txt"
 
     # Task to extract and save European market data
     def run_european_market_data():
@@ -39,7 +39,6 @@ with DAG(
         This function uses 'save_market_data_to_file()' to save the closing data
         to two file paths:
         - 'output_path': for the preprocessed data directory
-        - 'local_path': for a local copy
         """
         save_market_data_to_file(output_path)  # Save data to preprocessed directory
 
